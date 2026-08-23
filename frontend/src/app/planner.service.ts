@@ -1,0 +1,2 @@
+import {inject,Injectable} from '@angular/core'; import {HttpClient} from '@angular/common/http'; import {Plan,Profile} from './models';
+@Injectable({providedIn:'root'}) export class PlannerService{private http=inject(HttpClient);generate(p:Profile){return this.http.post<Plan>('/api/plans/generate',p)}import(file:File){const body=new FormData();body.append('file',file);return this.http.post<{fileName:string;rows:Record<string,unknown>[]}>('/api/import/excel',body)}}

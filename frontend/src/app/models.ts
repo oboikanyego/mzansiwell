@@ -1,0 +1,4 @@
+export interface Profile{name:string;age:number;sex:'female'|'male'|'other';heightCm:number;weightKg:number;goal:'lose'|'maintain'|'gain';activity:'low'|'moderate'|'high';diet:'balanced'|'vegetarian'|'pescatarian';budgetZar:number;planDays:7|10|14;familiarFoods:string[];pantryFoods:string[];excludedFoods:string[];allergies:string[];mealsPerDay:3|4}
+export interface Meal{name:string;type:string;ingredients:string[];calories:number;proteinG:number;costZar:number;youtubeUrl:string;time:string;reason:string}
+export interface PlanDay{date:string;meals:Meal[];exercise:string;exerciseTime:string;totals:{calories:number;proteinG:number;costZar:number}}
+export interface Plan{id:string;dailyTargetCalories:number;days:PlanDay[];estimatedPlanCostZar:number;estimatedMonthlyCostZar:number;budgetStatus:'within'|'over';shoppingList:{item:string;uses:number}[];notices:string[]}
