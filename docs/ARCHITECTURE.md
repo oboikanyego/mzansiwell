@@ -36,7 +36,7 @@ The initial API is intentionally stateless; it runs without MongoDB. Phase 1.1 c
 
 ## Phase 2 module architecture
 
-Phase 2 should remain within the same MzansiWell Angular application and Express API. Add lazy-loaded `calorie-tracker` and `gym` feature areas, with separate backend modules and collections but the same authenticated user profile.
+Phase 2 should remain within the same EatHealthy Angular application and Express API. Add lazy-loaded `calorie-tracker` and `gym` feature areas, with separate backend modules and collections but the same authenticated user profile.
 
 ```mermaid
 flowchart TD
