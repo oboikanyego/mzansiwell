@@ -100,7 +100,7 @@ Deploy the backend first because its public URL is required by the frontend buil
 The included Blueprint uses:
 
 - Root directory: `backend`
-- Build command: `npm install && npm run build`
+- Build command: `npm install --include=dev && npm run build`
 - Start command: `npm start`
 - Health check: `/api/health`
 - Node.js: `20.19.0`
@@ -114,6 +114,8 @@ The included Blueprint uses:
 | `CLIENT_ORIGIN` | Yes | `https://eathealthy.netlify.app` | Allows the Netlify UI through CORS. Use the exact deployed origin without a path. Multiple origins may be comma-separated. |
 | `MONGODB_URI` | Recommended | `mongodb+srv://...` | Persists generated plans. If omitted, the API uses non-durable memory-demo mode. |
 | `PORT` | No | Render-managed | Render injects this automatically; do not set it manually. |
+
+Render builds TypeScript before starting the service, so the build command explicitly includes development dependencies. This is required because `typescript`, `@types/node` and the other compile-time type packages are intentionally stored under `devDependencies` even though the deployed runtime uses `NODE_ENV=production`.
 
 If the Netlify site receives a different URL after its first deployment, update `CLIENT_ORIGIN` in Render and redeploy the API. For branch deploys, add their exact origins as comma-separated values.
 
