@@ -80,7 +80,7 @@ Costs are deliberately editable estimates, not live retailer prices. A later pha
 
 Phase 1 is the healthy diet and meal-planning application. Its light movement suggestion is only a small wellness prompt, not a gym programme.
 
-Phase 2 remains part of WholesomePath and will add:
+Phase 2 remains part of MzansiWell and will add:
 
 - A calorie diary for meals, portions and daily energy balance
 - A searchable exercise library grouped by muscle, equipment and difficulty
