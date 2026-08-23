@@ -97,6 +97,8 @@ Deploy the backend first because its public URL is required by the frontend buil
 4. Add the environment variables listed below before the first production test.
 5. After deployment, verify `https://YOUR-RENDER-SERVICE.onrender.com/api/health` and `https://YOUR-RENDER-SERVICE.onrender.com/api/docs`.
 
+Swagger uses a relative server URL, so **Try it out** automatically targets whichever API host serves the documentation: localhost during development and the current `onrender.com` origin after deployment.
+
 The included Blueprint uses:
 
 - Root directory: `backend`
