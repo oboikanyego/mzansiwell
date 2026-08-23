@@ -1,0 +1,4 @@
+import test from 'node:test'; import assert from 'node:assert/strict'; import {generatePlan} from './planner.js'; import {PlannerProfile} from './types.js';
+const profile:PlannerProfile={name:'BK',age:30,sex:'male',heightCm:175,weightKg:85,goal:'lose',activity:'moderate',diet:'balanced',budgetZar:2500,planDays:7,familiarFoods:['chicken','oats'],pantryFoods:['oats'],excludedFoods:[],allergies:[],mealsPerDay:4};
+test('generates requested days and meals',()=>{const p=generatePlan(profile,new Date('2026-08-24'));assert.equal(p.days.length,7);assert.equal(p.days[0]?.meals.length,4);assert.ok(p.shoppingList.length>0);});
+test('applies allergy exclusion',()=>{const p=generatePlan({...profile,allergies:['peanut']});assert.equal(p.days.flatMap(d=>d.meals).some(m=>m.ingredients.includes('peanut butter')),false);});
