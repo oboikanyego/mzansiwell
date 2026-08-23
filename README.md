@@ -79,6 +79,84 @@ docker compose up --build
 
 Then open `http://localhost:4200`.
 
+## Deploy the development branch
+
+The repository is prepared for separate deployments:
+
+- Netlify builds the Angular application from `frontend/`.
+- Render builds and runs the Express API from `backend/`.
+- MongoDB Atlas is optional. Without it, Render starts in memory-demo mode, but data is not durable and can be lost whenever the service restarts.
+
+Deploy the backend first because its public URL is required by the frontend build.
+
+### 1. Deploy the API to Render
+
+1. In Render, choose **New + → Blueprint** and connect this repository.
+2. Select the development branch containing `render.yaml`.
+3. Render will create the `eathealthy-api` web service.
+4. Add the environment variables listed below before the first production test.
+5. After deployment, verify `https://YOUR-RENDER-SERVICE.onrender.com/api/health` and `https://YOUR-RENDER-SERVICE.onrender.com/api/docs`.
+
+The included Blueprint uses:
+
+- Root directory: `backend`
+- Build command: `npm install && npm run build`
+- Start command: `npm start`
+- Health check: `/api/health`
+- Node.js: `20.19.0`
+
+#### Render environment variables
+
+| Variable | Required | Example | Purpose |
+| --- | --- | --- | --- |
+| `NODE_ENV` | Yes | `production` | Enables production logging and runtime behaviour. Set by `render.yaml`. |
+| `NODE_VERSION` | Yes | `20.19.0` | Pins the Render Node.js runtime. Set by `render.yaml`. |
+| `CLIENT_ORIGIN` | Yes | `https://eathealthy.netlify.app` | Allows the Netlify UI through CORS. Use the exact deployed origin without a path. Multiple origins may be comma-separated. |
+| `MONGODB_URI` | Recommended | `mongodb+srv://...` | Persists generated plans. If omitted, the API uses non-durable memory-demo mode. |
+| `PORT` | No | Render-managed | Render injects this automatically; do not set it manually. |
+
+If the Netlify site receives a different URL after its first deployment, update `CLIENT_ORIGIN` in Render and redeploy the API. For branch deploys, add their exact origins as comma-separated values.
+
+### 2. Deploy the UI to Netlify
+
+1. In Netlify, choose **Add new project → Import an existing project** and select this repository.
+2. Select the development branch.
+3. Netlify reads the root `netlify.toml`; do not manually override its base or publish directory unless the Angular project name changes.
+4. Add `API_BASE_URL` under **Project configuration → Environment variables**.
+5. Deploy and confirm the browser can call the Render `/api/health` endpoint.
+
+The included Netlify configuration uses:
+
+- Base directory: `frontend`
+- Build command: `npm install && npm run build:netlify`
+- Publish directory: `frontend/dist/wholesome-path/browser` (resolved as `dist/wholesome-path/browser` from the configured base)
+- SPA fallback: all Angular routes return `index.html`
+- Node.js: `20.19.0`
+
+#### Netlify environment variables
+
+| Variable | Required | Example | Purpose |
+| --- | --- | --- | --- |
+| `API_BASE_URL` | Yes | `https://eathealthy-api.onrender.com` | Sets the Render API origin in `runtime-config.js`. Do not add `/api` or a trailing slash. |
+| `NODE_VERSION` | Yes | `20.19.0` | Pins the build runtime. Already set in `netlify.toml`. |
+| `NPM_VERSION` | Yes | `10` | Pins npm for repeatable builds. Already set in `netlify.toml`. |
+
+`API_BASE_URL` is intentionally injected into a public runtime file and is not a secret. Never place database credentials, gateway secrets or private API keys in Netlify frontend variables.
+
+### Deployment order and CORS
+
+1. Deploy Render and copy its public URL.
+2. Set Netlify `API_BASE_URL` to that Render URL and deploy the UI.
+3. Copy the final Netlify origin.
+4. Set Render `CLIENT_ORIGIN` to the Netlify origin and redeploy Render.
+5. Test plan generation, Excel import, profile loading and Swagger.
+
+For local development, leave `API_BASE_URL` empty. Angular continues to proxy relative `/api` requests to `http://localhost:3000` through `frontend/proxy.conf.json`.
+
+### Environment variables reserved for later phases
+
+The current code does not yet consume payment, image-upload, email or authentication credentials. Add variables such as Paystack test keys, Cloudinary credentials, an email provider key, JWT secrets and Socket.IO settings only when those integrations are implemented. Keeping unused secrets out of Netlify and Render reduces accidental exposure and configuration drift.
+
 ## How the no-cost planning engine works
 
 The engine filters a curated food catalogue by allergies, excluded foods and dietary pattern. It scores meals using familiarity, pantry overlap, cost, protein, vegetable content and goal suitability. It then rotates high-scoring meals, checks the daily energy band, estimates the plan cost and creates a shopping list. This is explainable and free to run.
