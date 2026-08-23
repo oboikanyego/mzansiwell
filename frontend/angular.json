@@ -1,1 +1,39 @@
-{"$schema":"./node_modules/@angular/cli/lib/config/schema.json","version":1,"newProjectRoot":"projects","projects":{"wholesome-path":{"projectType":"application","root":"","sourceRoot":"src","prefix":"app","architect":{"build":{"builder":"@angular/build:application","options":{"browser":"src/main.ts","tsConfig":"tsconfig.app.json","assets":[{"glob":"**/*","input":"public"}],"styles":["src/styles.scss"]},"configurations":{"production":{"optimization":true,"outputHashing":"all"},"development":{"optimization":false,"sourceMap":true}},"defaultConfiguration":"production"},"serve":{"builder":"@angular/build:dev-server","configurations":{"production":{"buildTarget":"wholesome-path:build:production"},"development":{"buildTarget":"wholesome-path:build:development"}},"defaultConfiguration":"development"}}}},"cli":{"analytics":false}}
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "wholesome-path": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "src/main.ts",
+            "polyfills": ["zone.js"],
+            "tsConfig": "tsconfig.app.json",
+            "assets": [{"glob": "**/*", "input": "public"}],
+            "styles": ["src/styles.scss"]
+          },
+          "configurations": {
+            "production": {"optimization": true, "outputHashing": "all"},
+            "development": {"optimization": false, "sourceMap": true}
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {"buildTarget": "wholesome-path:build:production"},
+            "development": {"buildTarget": "wholesome-path:build:development"}
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    }
+  },
+  "cli": {"analytics": false}
+}
