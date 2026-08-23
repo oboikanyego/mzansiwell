@@ -1,7 +1,7 @@
 export const openapi={
  openapi:'3.0.3',
  info:{title:'EatHealthy API',version:'0.2.0',description:'Budget-aware meal planning, member schedules, reminders, subscriptions and progress API'},
- servers:[{url:'http://localhost:3000'}],
+ servers:[{url:'/',description:'Current API host'}],
  paths:{
   '/api/health':{get:{summary:'Health check',responses:{'200':{description:'OK'}}}},
   '/api/catalogue/meals':{get:{summary:'List curated meals',responses:{'200':{description:'Meal catalogue'}}}},
