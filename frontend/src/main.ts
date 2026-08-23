@@ -1,2 +1,2 @@
-import {bootstrapApplication} from '@angular/platform-browser'; import {provideHttpClient} from '@angular/common/http'; import {provideAnimationsAsync} from '@angular/platform-browser/animations/async'; import {AppComponent} from './app/app.component';
-bootstrapApplication(AppComponent,{providers:[provideHttpClient(),provideAnimationsAsync()]}).catch(console.error);
+import {bootstrapApplication} from '@angular/platform-browser'; import {provideHttpClient} from '@angular/common/http'; import {provideAnimationsAsync} from '@angular/platform-browser/animations/async'; import {provideRouter,withInMemoryScrolling} from '@angular/router'; import {AppComponent} from './app/app.component'; import {routes} from './app/app.routes';
+bootstrapApplication(AppComponent,{providers:[provideHttpClient(),provideAnimationsAsync(),provideRouter(routes,withInMemoryScrolling({scrollPositionRestoration:'top'}))]}).catch(console.error);

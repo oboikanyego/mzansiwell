@@ -1,16 +1,19 @@
-import {CommonModule} from '@angular/common'; import {Component,inject} from '@angular/core'; import {FormBuilder,ReactiveFormsModule,Validators} from '@angular/forms'; import {MatButtonModule} from '@angular/material/button'; import {MatCardModule} from '@angular/material/card'; import {MatChipsModule} from '@angular/material/chips'; import {MatFormFieldModule} from '@angular/material/form-field'; import {MatIconModule} from '@angular/material/icon'; import {MatInputModule} from '@angular/material/input'; import {MatProgressSpinnerModule} from '@angular/material/progress-spinner'; import {MatSelectModule} from '@angular/material/select'; import {MatSnackBar,MatSnackBarModule} from '@angular/material/snack-bar'; import {MatTabsModule} from '@angular/material/tabs'; import {DomSanitizer,SafeResourceUrl} from '@angular/platform-browser';
-import {PlannerService} from './planner.service'; import {Plan,Profile} from './models';
-@Component({selector:'app-root',standalone:true,imports:[CommonModule,ReactiveFormsModule,MatButtonModule,MatCardModule,MatChipsModule,MatFormFieldModule,MatIconModule,MatInputModule,MatProgressSpinnerModule,MatSelectModule,MatSnackBarModule,MatTabsModule],templateUrl:'./app.component.html',styleUrl:'./app.component.scss'})
+import {CommonModule} from '@angular/common';
+import {Component,effect,inject,signal} from '@angular/core';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import {NavigationEnd,Router,RouterLink,RouterLinkActive,RouterOutlet} from '@angular/router';
+import {filter} from 'rxjs';
+import {AuthService} from './auth.service';
+
+type Theme='system'|'light'|'dark';
+
+@Component({selector:'app-root',standalone:true,imports:[CommonModule,RouterOutlet,RouterLink,RouterLinkActive,MatButtonModule,MatIconModule,MatMenuModule,MatSidenavModule],templateUrl:'./app.component.html',styleUrl:'./app.component.scss'})
 export class AppComponent{
- private fb=inject(FormBuilder);private api=inject(PlannerService);private snack=inject(MatSnackBar);private sanitizer=inject(DomSanitizer);
- plan?:Plan;loading=false;activeDay=0;importRows:Record<string,unknown>[]=[];tracked=new Set<string>();
- form=this.fb.nonNullable.group({name:['BK',Validators.required],age:[30,[Validators.required,Validators.min(18)]],sex:this.fb.nonNullable.control<'female'|'male'|'other'>('male'),heightCm:[175,Validators.required],weightKg:[85,Validators.required],goal:this.fb.nonNullable.control<'lose'|'maintain'|'gain'>('lose'),activity:this.fb.nonNullable.control<'low'|'moderate'|'high'>('moderate'),diet:this.fb.nonNullable.control<'balanced'|'vegetarian'|'pescatarian'>('balanced'),budgetZar:[2500,[Validators.required,Validators.min(300)]],planDays:this.fb.nonNullable.control<7|10|14>(10),mealsPerDay:this.fb.nonNullable.control<3|4>(4),familiarFoods:['oats, eggs, chicken, potatoes, mixed vegetables, pilchards, bread'],pantryFoods:['oats, eggs, popcorn kernels'],excludedFoods:[''],allergies:['']});
- csv(v:string){return v.split(',').map(x=>x.trim()).filter(Boolean)}
- generate(){if(this.form.invalid)return;this.loading=true;const v=this.form.getRawValue();const profile={...v,familiarFoods:this.csv(v.familiarFoods),pantryFoods:this.csv(v.pantryFoods),excludedFoods:this.csv(v.excludedFoods),allergies:this.csv(v.allergies)} as Profile;this.api.generate(profile).subscribe({next:p=>{this.plan=p;this.activeDay=0;this.loading=false;localStorage.setItem('eathealthy-plan',JSON.stringify(p));this.snack.open('Your plan is ready.','Close',{duration:2500})},error:e=>{this.loading=false;this.snack.open(e.error?.message||'Could not generate plan.','Close')}})}
- onFile(e:Event){const file=(e.target as HTMLInputElement).files?.[0];if(!file)return;this.api.import(file).subscribe({next:r=>{this.importRows=r.rows;this.snack.open(`${r.rows.length} schedule days imported for preview.`,'Close')},error:e=>this.snack.open(e.error?.message||'Import failed.','Close')})}
- toggle(key:string){this.tracked.has(key)?this.tracked.delete(key):this.tracked.add(key);localStorage.setItem('eathealthy-tracker',JSON.stringify([...this.tracked]))}
- safeVideo(url:string):SafeResourceUrl|null{const match=url.match(/[?&]v=([\w-]{11})/);return match?this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube-nocookie.com/embed/${match[1]}`):null}
- get currentDay(){return this.plan?.days[this.activeDay]}
- reminders(){if(!('Notification'in window)){this.snack.open('Notifications are not supported in this browser.','Close');return}Notification.requestPermission().then(p=>this.snack.open(p==='granted'?'Reminders enabled. Keep this app open for demo reminders.':'Notification permission was not granted.','Close'))}
- constructor(){const p=localStorage.getItem('eathealthy-plan');if(p)this.plan=JSON.parse(p);const t=localStorage.getItem('eathealthy-tracker');if(t)this.tracked=new Set(JSON.parse(t));}
+  readonly auth=inject(AuthService);private router=inject(Router);readonly menuOpen=signal(false);readonly theme=signal<Theme>((localStorage.getItem('eathealthy-theme') as Theme)||'system');readonly authPage=signal(false);
+  constructor(){effect(()=>{const theme=this.theme();localStorage.setItem('eathealthy-theme',theme);const dark=theme==='dark'||(theme==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark-theme',dark)});this.router.events.pipe(filter(event=>event instanceof NavigationEnd)).subscribe((event)=>{this.menuOpen.set(false);this.authPage.set(['/login','/register'].includes((event as NavigationEnd).urlAfterRedirects))});}
+  setTheme(theme:Theme){this.theme.set(theme)}
+  initials(){return this.auth.user()?.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()||'EH'}
 }
