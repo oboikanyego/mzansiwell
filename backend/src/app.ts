@@ -6,7 +6,9 @@ const memberProfile=z.object({name:z.string().min(1),email:z.string().email(),ag
 const preferences=z.object({meals:z.boolean(),weight:z.boolean(),billing:z.boolean(),reports:z.boolean()});
 const scheduleEvent=z.object({planId:z.string().min(1),mealId:z.string().min(1),scheduledAt:z.string().datetime(),windowEndsAt:z.string().datetime(),outcome:z.enum(['completed','completed_late','missed','snoozed'])});
 export const app=express(); const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:5*1024*1024}});
-app.use(helmet({contentSecurityPolicy:false})); app.use(cors({origin:process.env.CLIENT_ORIGIN||'http://localhost:4200'})); app.use(express.json({limit:'1mb'})); app.use(morgan('dev'));
+const allowedOrigins=(process.env.CLIENT_ORIGIN||'http://localhost:4200').split(',').map(origin=>origin.trim().replace(/\/$/,'')).filter(Boolean);
+app.set('trust proxy',1);
+app.use(helmet({contentSecurityPolicy:false})); app.use(cors({origin(origin,callback){if(!origin||allowedOrigins.includes(origin.replace(/\/$/,'')))return callback(null,true);return callback(new Error('Origin is not allowed by CORS.'));}})); app.use(express.json({limit:'1mb'})); app.use(morgan(process.env.NODE_ENV==='production'?'combined':'dev'));
 app.get('/api/health',(_q,r)=>r.json({status:'ok',mode:process.env.MONGODB_URI?'mongodb':'memory-demo'}));
 app.get('/api/catalogue/meals',(_q,r)=>r.json(meals));
 app.get('/api/member/profile',(_q,r)=>r.json(memberStore.profile));
