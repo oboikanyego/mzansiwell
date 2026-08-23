@@ -2,3 +2,8 @@ export interface Profile{name:string;age:number;sex:'female'|'male'|'other';heig
 export interface Meal{name:string;type:string;ingredients:string[];calories:number;proteinG:number;costZar:number;youtubeUrl:string;time:string;reason:string}
 export interface PlanDay{date:string;meals:Meal[];exercise:string;exerciseTime:string;totals:{calories:number;proteinG:number;costZar:number}}
 export interface Plan{id:string;dailyTargetCalories:number;days:PlanDay[];estimatedPlanCostZar:number;estimatedMonthlyCostZar:number;budgetStatus:'within'|'over';shoppingList:{item:string;uses:number}[];notices:string[]}
+export interface MemberProfile{id:string;name:string;email:string;age:number;currentWeightKg:number;targetWeightKg:number;profileImageUrl:string|null;theme:'system'|'light'|'dark'}
+export interface Subscription{plan:'free'|'plus'|'guided';status:'active'|'past_due'|'grace'|'expired'|'free';amountZar:number;renewsAt:string|null;graceEndsAt:string|null;entitlements:string[]}
+export interface NotificationPreferences{meals:boolean;weight:boolean;billing:boolean;reports:boolean}
+export interface ScheduleEventInput{planId:string;mealId:string;scheduledAt:string;windowEndsAt:string;outcome:'completed'|'completed_late'|'missed'|'snoozed'}
+export interface ReportSummary{period:string;total:number;completed:number;completedLate:number;missed:number;unrecorded:number;completionRate:number;generatedAt:string}

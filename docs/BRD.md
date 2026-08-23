@@ -1,8 +1,8 @@
-# MzansiWell Business Requirements Document
+# EatHealthy Business Requirements Document
 
 ## 1. Purpose
 
-MzansiWell helps adults build affordable, repeatable eating and movement routines from foods they already know. Phase 1 is a responsive web application; Phase 2 targets calorie and gym modules followed by a mobile/PWA experience with reliable push reminders and offline tracking.
+EatHealthy helps adults build affordable, repeatable eating and movement routines from foods they already know. Phase 1 is a responsive web application; Phase 2 targets calorie and gym modules followed by a mobile/PWA experience with reliable push reminders and offline tracking.
 
 ## 2. Business goals
 
@@ -95,6 +95,93 @@ MzansiWell helps adults build affordable, repeatable eating and movement routine
 - Display AI-originated content and require deterministic validation before saving.
 - Support a local model or pay-as-you-go provider behind a replaceable adapter.
 
+### FR-11 Registration and wellness onboarding
+
+- After account creation, require a separate onboarding step before plan generation.
+- Capture a profile image, age, current weight, target weight, height, activity level and relevant consent.
+- Upload profile images through Cloudinary using signed server-side upload configuration; never expose Cloudinary secrets in Angular.
+- Let members replace or remove their image and edit measurements later.
+- Validate plausible ranges while allowing an administrator to configure limits and help text.
+
+### FR-12 Fortnightly progress check-ins
+
+- Create a weight check-in reminder every 14 days while a member has opted in and an active plan.
+- Send a reminder email containing a secure sign-in link; never request health information by email reply.
+- Allow the member to record weight in kilograms, view dated history and correct an accidental entry.
+- Compare recorded change with a clearly labelled, non-guaranteed plan estimate.
+- Weight alone must not be used to declare a plan successful, diagnose a problem or automatically intensify calorie restriction.
+- When progress differs materially from the estimate across repeated check-ins, offer a plan review and suggest an optional consultation with a registered dietitian or healthcare professional.
+- Support snooze, unsubscribe, quiet periods, timezone-aware delivery, retry and delivery-failure logging.
+
+### FR-13 Communications and real-time events
+
+- Place email behind a provider adapter so the same portfolio communication provider can be reused once its current implementation is confirmed.
+- Store versioned templates for registration, verification, fortnightly check-in, reminder failure and subscription events.
+- Record message status, provider reference, attempt count and timestamps without storing secrets in logs.
+- Use Socket.IO for authenticated in-app events such as plan-ready notices, reminder status and future live support.
+- Apply per-user rooms, token validation, rate limits and reconnect handling.
+
+### FR-14 Member assistant
+
+- Display the floating assistant only after authentication.
+- Initially provide guided navigation, FAQs and contextual shortcuts without paid AI.
+- Clearly identify automated responses and escalate clinical questions to professional-help guidance.
+- Future conversational AI must use a replaceable provider, retrieval from approved content and strict safety boundaries.
+
+### FR-15 Subscription test payments
+
+- Support a payment-provider adapter with test-mode checkout, verified server-side callbacks and idempotent subscription activation.
+- Do not collect or store raw card details.
+- Keep test and live keys separate and expose only the provider's permitted public key to the frontend.
+- Confirm whether the selected provider is Paystack or Peach Payments before implementation; the current prototype must not create charges.
+
+### FR-16 Home-page meal media
+
+- Autoplay a short muted, looping food-preparation video on the public home page with a still-image fallback.
+- Overlay a sample meal time, meal name, estimated calories and estimated price.
+- Honour reduced-motion preferences and provide sufficient text contrast.
+
+### FR-17 Expanded administration
+
+- Administrators have all member capabilities plus access to users and roles, plans, catalogue, subscriptions, reminder delivery, communication templates, media, safety flags and audit history.
+- Every privileged action requires API-side role enforcement and an audit record; hiding UI controls is not authorization.
+- Health data access must be least-privilege and purpose-limited, including for administrators.
+
+### FR-18 Member profile and appearance
+
+- Provide an authenticated profile page for personal details, wellness measurements, profile image, consent and account controls.
+- Provide Light, Dark and System appearance modes; System must follow the device preference.
+- Persist appearance preference per device and ensure both themes meet accessible contrast targets.
+
+### FR-19 Meal-window reminders and outcomes
+
+- Each planned meal has a configurable start time and end time, for example breakfast from 06:00 to 06:30.
+- Notify at the start of the meal window and every 15 minutes inside that window until the member records an outcome.
+- Let the member mark a meal Completed, Completed late, Not completed or Snoozed for 15 minutes.
+- Stop reminders immediately when an outcome is recorded and automatically stop at the end of the configured window.
+- Never continue indefinite 15-minute reminders outside the meal window.
+- Store scheduled time, completion time, outcome, reminder attempts and optional reason for reporting.
+- Display meal-type icons and provide access to the meal instructions and curated recipe video from the schedule item.
+
+### FR-20 Weekly and monthly performance reports
+
+- Generate a weekly summary every Monday and a monthly summary on the first day of the following month.
+- Report completed on time, completed late, not completed and unrecorded items separately.
+- Include adherence trend, estimated grocery budget, weight check-in trend and practical schedule-adjustment suggestions.
+- Deliver by email only when opted in and keep the same report available inside the application.
+- Avoid shame-based scores or language; use the report to improve plan fit.
+
+### FR-21 Subscription lifecycle
+
+- Send configurable in-app and email notices before payment is due, after payment failure and before access changes.
+- Suggested notice cadence: seven days before renewal, two days before renewal, on the due date, and after a failed payment.
+- Apply a configurable grace period after failed renewal before premium entitlements are paused.
+- Expiry must not delete or hide the member's account, profile, consent history, measurements, tracking history or reports.
+- The latest generated plan remains readable after expiry; creating or regenerating premium plans, premium reminders and advanced reports pauses.
+- Allow renewal, downgrade to Free, payment-method update, data export and account deletion.
+- Restoring payment must restore entitlements idempotently without duplicating subscriptions, reminders or plans.
+- Payment webhooks and server-side verification are authoritative; the frontend success screen must not activate access.
+
 ## 5. Non-functional requirements
 
 - Responsive WCAG 2.2 AA-oriented interface.
@@ -116,6 +203,10 @@ MzansiWell helps adults build affordable, repeatable eating and movement routine
 - PriceObservation: region, retailer, package, unit cost, effective dates.
 - Reminder: event type, local time, recurrence, channel, status.
 - TrackingEvent: scheduled item, completion and optional note.
+- WeightCheckIn: member, value, unit, captured date, source and correction history.
+- Communication: template version, channel, provider reference, delivery state and attempts.
+- Subscription: product, provider customer reference, status, renewal and entitlement dates.
+- MediaAsset: Cloudinary public identifier, owner, purpose and deletion state.
 
 ## 7. Out of scope for Phase 1
 
@@ -133,11 +224,11 @@ Responsive Angular app, deterministic planner, curated sample catalogue, budget 
 
 ### Phase 1.1 production foundation
 
-Authentication, Mongo persistence, admin catalogue, consent/privacy controls, robust tests, scheduled push/email jobs and deploy pipelines.
+Authentication, Mongo persistence, onboarding, Cloudinary media, fortnightly weight check-ins, admin catalogue, consent/privacy controls, provider-agnostic email, Socket.IO events, test-mode subscription checkout, robust tests, scheduled jobs and deploy pipelines.
 
 ### Phase 2 calorie and gym companion modules
 
-Keep Phase 2 inside the same MzansiWell product, identity and navigation.
+Keep Phase 2 inside the same EatHealthy product, identity and navigation.
 
 - Calorie diary with food search, serving sizes, meal totals and remaining daily estimate.
 - Quick-add calories and reusable favourite meals.

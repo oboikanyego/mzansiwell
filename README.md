@@ -1,12 +1,12 @@
-# MzansiWell
+# EatHealthy
 
-MzansiWell is a budget-aware healthy meal planner designed around real South African routines and food choices. It transforms familiar foods, pantry items, dietary preferences, an optional Excel schedule and a monthly grocery budget into a practical daily eating plan—without requiring a paid AI subscription.
+EatHealthy is a budget-aware healthy meal planner designed around real South African routines and food choices. It transforms familiar foods, pantry items, dietary preferences, an optional Excel schedule and a monthly grocery budget into a practical daily eating plan—without requiring a paid AI subscription.
 
-> Eat familiar food. Spend with intention. Build healthier days.
+> Eat familiar. Live healthier. Spend smarter.
 
-## Why MzansiWell?
+## Why EatHealthy?
 
-Many nutrition applications assume expensive ingredients, unfamiliar recipes or a permanent AI subscription. MzansiWell starts with what a person already eats and can afford. Its explainable planning engine filters unsafe or unwanted ingredients, favours pantry reuse and affordable combinations, estimates plan cost and creates a schedule that can realistically fit around work and commuting.
+Many nutrition applications assume expensive ingredients, unfamiliar recipes or a permanent AI subscription. EatHealthy starts with what a person already eats and can afford. Its explainable planning engine filters unsafe or unwanted ingredients, favours pantry reuse and affordable combinations, estimates plan cost and creates a schedule that can realistically fit around work and commuting.
 
 The long-term product brings healthy meal planning, calorie tracking and guided gym workouts into one connected experience. The current repository intentionally closes Phase 1 around the meal-planning MVP before those connected modules are added.
 
@@ -25,6 +25,10 @@ The long-term product brings healthy meal planning, calorie tracking and guided 
 - Import of `.xlsx` schedules shaped like the included reference workbook
 - MongoDB plan persistence when configured, with a stateless demo fallback
 - Swagger/OpenAPI endpoint documentation
+- Member profile and appearance API contracts
+- Subscription status and entitlement contracts
+- Notification preference and schedule-outcome endpoints
+- Weekly/monthly report-summary endpoint
 
 ## Stack
 
@@ -49,6 +53,11 @@ npm run dev
 ```
 
 The API starts at `http://localhost:3000`. Swagger UI is at `http://localhost:3000/api/docs`.
+
+The member-facing UI and API now share contracts for profiles, subscription state,
+notification preferences, meal outcomes and performance summaries. These endpoints
+use a documented in-memory demo store until authenticated MongoDB persistence and
+scheduled communication jobs are implemented.
 
 MongoDB is optional. With no `MONGODB_URI`, the API uses memory storage so you can try it immediately.
 
@@ -80,7 +89,7 @@ Costs are deliberately editable estimates, not live retailer prices. A later pha
 
 Phase 1 is the healthy diet and meal-planning application. Its light movement suggestion is only a small wellness prompt, not a gym programme.
 
-Phase 2 remains part of MzansiWell and will add:
+Phase 2 remains part of EatHealthy and will add:
 
 - A calorie diary for meals, portions and daily energy balance
 - A searchable exercise library grouped by muscle, equipment and difficulty
@@ -98,7 +107,7 @@ The importer recognises headers such as `Date`, `Breakfast`, `Lunch`, `Snack`, `
 
 ## Health note
 
-MzansiWell supports general wellness and habit planning. It is not medical advice and does not diagnose or treat disease. Calorie values and food prices are estimates. Users with allergies, pregnancy, diabetes, kidney/heart disease, eating-disorder history, medication-related dietary needs, or other clinical requirements should consult an appropriate registered professional.
+EatHealthy supports general wellness and habit planning. It is not medical advice and does not diagnose or treat disease. Calorie values and food prices are estimates. Users with allergies, pregnancy, diabetes, kidney/heart disease, eating-disorder history, medication-related dietary needs, or other clinical requirements should consult an appropriate registered professional.
 
 ## Documentation
 
