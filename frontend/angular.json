@@ -13,27 +13,56 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
-            "polyfills": ["zone.js"],
+            "polyfills": [
+              "zone.js"
+            ],
             "tsConfig": "tsconfig.app.json",
-            "assets": [{"glob": "**/*", "input": "public"}],
-            "styles": ["src/styles.scss"]
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
+            ],
+            "styles": [
+              "src/styles.scss"
+            ]
           },
           "configurations": {
-            "production": {"optimization": true, "outputHashing": "all"},
-            "development": {"optimization": false, "sourceMap": true}
+            "production": {
+              "optimization": true,
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "sourceMap": true
+            }
           },
           "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
-            "production": {"buildTarget": "wholesome-path:build:production"},
-            "development": {"buildTarget": "wholesome-path:build:development"}
+            "production": {
+              "buildTarget": "wholesome-path:build:production"
+            },
+            "development": {
+              "buildTarget": "wholesome-path:build:development"
+            }
           },
           "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "tsconfig.spec.json",
+            "runner": "vitest",
+            "buildTarget": "wholesome-path:build:development"
+          }
         }
       }
     }
   },
-  "cli": {"analytics": false}
+  "cli": {
+    "analytics": false
+  }
 }

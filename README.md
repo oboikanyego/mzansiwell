@@ -36,7 +36,8 @@ The long-term product brings healthy meal planning, calorie tracking and guided 
 - Angular Material
 - Node.js + Express + TypeScript backend
 - MongoDB + Mongoose (optional for local demo)
-- SheetJS for `.xlsx` parsing
+- ExcelJS for `.xlsx` parsing
+- Node test runner (API) and Vitest via the Angular unit-test builder (web)
 - Docker Compose
 
 ## Quick start
@@ -78,6 +79,13 @@ docker compose up --build
 ```
 
 Then open `http://localhost:4200`.
+
+## Tests
+
+```bash
+cd backend && npm test   # planner, importer and API tests
+cd frontend && npm test  # auth service and route guard specs
+```
 
 ## Deploy the development branch
 
@@ -187,6 +195,8 @@ Keeping these modules in one application means the calorie and gym features can 
 
 The importer recognises headers such as `Date`, `Breakfast`, `Lunch`, `Snack`, `Dinner`, `Focus`, video columns and `Prep note`. Your supplied workbook works as a reference shape. Imported schedules are previewed before they replace a generated plan.
 
+Only `.xlsx` workbooks up to 5 MB are accepted; a CSV must be opened in Excel and saved as `.xlsx` first. The header row may sit within the first 10 rows, and a sheet whose name contains "schedule" is preferred over the first sheet. Dates are returned as ISO `YYYY-MM-DD` strings. Uploads that are not workbooks, have no `Date` column, have no meal columns or contain no meal rows are rejected with a 400 and a plain-language message; files over 5 MB return 413.
+
 ## Health note
 
 EatHealthy supports general wellness and habit planning. It is not medical advice and does not diagnose or treat disease. Calorie values and food prices are estimates. Users with allergies, pregnancy, diabetes, kidney/heart disease, eating-disorder history, medication-related dietary needs, or other clinical requirements should consult an appropriate registered professional.
@@ -215,4 +225,4 @@ MIT—see [LICENSE](LICENSE).
 - `backend/` Express API and deterministic planner
 - `docs/BRD.md` detailed business requirements and roadmap
 - `docs/ARCHITECTURE.md` design and data flow
-- `sample-data/` sample import CSV and food catalogue notes
+- `sample-data/` sample schedule in CSV form (open in Excel and save as `.xlsx` to try the importer)
