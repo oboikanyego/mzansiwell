@@ -1,5 +1,5 @@
 import express from 'express'; import cors from 'cors'; import helmet from 'helmet'; import morgan from 'morgan'; import multer from 'multer'; import swaggerUi from 'swagger-ui-express'; import mongoose from 'mongoose'; import {z} from 'zod';
-import {generatePlan} from './planner.js'; import {meals} from './data/meals.js'; import {importSchedule} from './importer.js'; import {openapi} from './openapi.js';
+import {generatePlan} from './planner.js'; import {meals} from './data/meals.js'; import {ImportError,importSchedule} from './importer.js'; import {openapi} from './openapi.js';
 import {buildSummary, memberStore, notifications, recordScheduleEvent} from './member.js';
 const profile=z.object({name:z.string().min(1),age:z.number().int().min(18).max(100),sex:z.enum(['female','male','other']),heightCm:z.number().min(120).max(230),weightKg:z.number().min(35).max(300),goal:z.enum(['lose','maintain','gain']),activity:z.enum(['low','moderate','high']),diet:z.enum(['balanced','vegetarian','pescatarian']),budgetZar:z.number().min(300),planDays:z.union([z.literal(7),z.literal(10),z.literal(14)]),familiarFoods:z.array(z.string()),pantryFoods:z.array(z.string()),excludedFoods:z.array(z.string()),allergies:z.array(z.string()),mealsPerDay:z.union([z.literal(3),z.literal(4)])});
 const memberProfile=z.object({name:z.string().min(1),email:z.string().email(),age:z.number().int().min(18).max(100),currentWeightKg:z.number().min(35).max(300),targetWeightKg:z.number().min(35).max(300),profileImageUrl:z.string().url().nullable(),theme:z.enum(['system','light','dark'])});
@@ -8,7 +8,7 @@ const scheduleEvent=z.object({planId:z.string().min(1),mealId:z.string().min(1),
 export const app=express(); const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:5*1024*1024}});
 const allowedOrigins=(process.env.CLIENT_ORIGIN||'http://localhost:4200').split(',').map(origin=>origin.trim().replace(/\/$/,'')).filter(Boolean);
 app.set('trust proxy',1);
-app.use(helmet({contentSecurityPolicy:false})); app.use(cors({origin(origin,callback){if(!origin||allowedOrigins.includes(origin.replace(/\/$/,'')))return callback(null,true);return callback(new Error('Origin is not allowed by CORS.'));}})); app.use(express.json({limit:'1mb'})); app.use(morgan(process.env.NODE_ENV==='production'?'combined':'dev'));
+app.use(helmet({contentSecurityPolicy:false})); app.use(cors({origin(origin,callback){if(!origin||allowedOrigins.includes(origin.replace(/\/$/,'')))return callback(null,true);return callback(Object.assign(new Error('Origin is not allowed by CORS.'),{status:403}));}})); app.use(express.json({limit:'1mb'})); app.use(morgan(process.env.NODE_ENV==='production'?'combined':'dev'));
 app.get('/api/health',(_q,r)=>r.json({status:'ok',mode:process.env.MONGODB_URI?'mongodb':'memory-demo'}));
 app.get('/api/catalogue/meals',(_q,r)=>r.json(meals));
 app.get('/api/member/profile',(_q,r)=>r.json(memberStore.profile));
@@ -23,6 +23,11 @@ const planSchema=new mongoose.Schema<StoredPlan>({planId:{type:String,index:true
 const PlanModel=(mongoose.models['Plan'] as mongoose.Model<StoredPlan>|undefined)||mongoose.model<StoredPlan>('Plan',planSchema);
 app.post('/api/plans/generate',async(q,r)=>{const parsed=profile.safeParse(q.body);if(!parsed.success)return r.status(400).json({message:'Please correct the profile.',issues:parsed.error.issues});try{const plan=generatePlan(parsed.data);if(mongoose.connection.readyState===1)await PlanModel.create({planId:plan.id,profileName:parsed.data.name,payload:plan});return r.status(201).json(plan);}catch(e){return r.status(422).json({message:e instanceof Error?e.message:'Plan could not be generated.'});}});
 app.get('/api/plans',async(_q,r)=>{if(mongoose.connection.readyState!==1)return r.json([]);const docs=await PlanModel.find().sort({createdAt:-1}).limit(10).lean();return r.json(docs.map(d=>d['payload']));});
-app.post('/api/import/excel',upload.single('file'),(q,r)=>{if(!q.file)return r.status(400).json({message:'Choose an .xlsx file.'});try{return r.json({fileName:q.file.originalname,rows:importSchedule(q.file.buffer)});}catch(e){return r.status(400).json({message:e instanceof Error?e.message:'Import failed.'});}});
+app.post('/api/import/excel',upload.single('file'),async(q,r)=>{if(!q.file)return r.status(400).json({message:'Choose an .xlsx file.'});try{return r.json({fileName:q.file.originalname,rows:await importSchedule(q.file.buffer)});}catch(e){if(e instanceof ImportError)return r.status(400).json({message:e.message});throw e;}});
 app.use('/api/docs',swaggerUi.serve,swaggerUi.setup(openapi));
-app.use((e:Error,_q:express.Request,r:express.Response,_n:express.NextFunction)=>r.status(500).json({message:e.message||'Unexpected error'}));
+app.use((e:Error&{status?:number},_q:express.Request,r:express.Response,_n:express.NextFunction)=>{
+ if(e instanceof multer.MulterError)return r.status(e.code==='LIMIT_FILE_SIZE'?413:400).json({message:e.code==='LIMIT_FILE_SIZE'?'The file is larger than 5 MB.':e.message});
+ const status=e.status&&e.status>=400&&e.status<500?e.status:500;
+ if(status===500)console.error(e);
+ return r.status(status).json({message:status===500?'Unexpected error':e.message});
+});

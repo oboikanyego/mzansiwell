@@ -6,7 +6,7 @@ export const openapi={
   '/api/health':{get:{summary:'Health check',responses:{'200':{description:'OK'}}}},
   '/api/catalogue/meals':{get:{summary:'List curated meals',responses:{'200':{description:'Meal catalogue'}}}},
   '/api/plans/generate':{post:{summary:'Generate a deterministic wellness plan',requestBody:{required:true,content:{'application/json':{schema:{$ref:'#/components/schemas/PlannerProfile'}}}},responses:{'201':{description:'Generated plan'},'400':{description:'Invalid profile'}}}},
-  '/api/import/excel':{post:{summary:'Preview an Excel meal schedule',requestBody:{content:{'multipart/form-data':{schema:{type:'object',properties:{file:{type:'string',format:'binary'}}}}}},responses:{'200':{description:'Imported schedule preview'}}}},
+  '/api/import/excel':{post:{summary:'Preview an Excel meal schedule',requestBody:{content:{'multipart/form-data':{schema:{type:'object',properties:{file:{type:'string',format:'binary'}}}}}},responses:{'200':{description:'Imported schedule preview'},'400':{description:'Not a valid .xlsx workbook, or required columns are missing'},'413':{description:'File is larger than 5 MB'}}}},
   '/api/member/profile':{get:{summary:'Get the member profile',responses:{'200':{description:'Member profile'}}},put:{summary:'Update the member profile',responses:{'200':{description:'Updated profile'},'400':{description:'Invalid profile'}}}},
   '/api/member/subscription':{get:{summary:'Get subscription status and entitlements',responses:{'200':{description:'Subscription'}}}},
   '/api/member/notifications':{get:{summary:'Get member notifications and preferences',responses:{'200':{description:'Notifications'}}}},
